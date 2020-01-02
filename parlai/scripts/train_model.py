@@ -27,7 +27,7 @@ import numpy as np
 import os
 import signal
 import json
-
+from torch.cuda import empty_cache
 from parlai.core.agents import create_agent, create_agent_from_shared
 from parlai.core.worlds import create_task
 from parlai.core.params import ParlaiParser
@@ -499,7 +499,6 @@ class TrainLoop():
                 # do one example / batch of examples
                 world.parley()
                 self.parleys += 1
-
                 # get the total training examples done, compute epochs
                 self._total_epochs = (
                     self._preempted_epochs +
@@ -545,6 +544,7 @@ class TrainLoop():
                     ))
                     self.save_model('.checkpoint')
                     self.save_time.reset()
+                empty_cache()
 
         if not self.saved and is_primary_worker():
             # save agent

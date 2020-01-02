@@ -2,6 +2,9 @@
 import numpy as np
 np.random.seed(seed=300)
 import spacy
+from parlai.core.dict import DictionaryAgent
+import math
+import random
 
 # Load English tokenizer, tagger, parser, NER and word vectors
 nlp = spacy.load(
@@ -47,9 +50,17 @@ class Perturb(object):
             turns = self.swap(turns)
         elif "repeat" in self.opt['perturb']:
             turns = self.repeat(turns)
+        #My modification from here
+        elif "replaceall" in self.opt['perturb']:
+            turns = self.replaceall(turns)
+        elif "replace10percent" in self.opt['perturb']:
+            turns = self.replace10percent(turns)
+        elif "replace20percent" in self.opt['perturb']:
+            turns = self.replace20percent(turns)
+        elif "replace30percent" in self.opt['perturb']:
+            turns = self.replace30percent(turns)
         else:
             assert "Invalid perturb mode : {}. Valid : random, drop, swap, repeat".format(self.opt['perturb'])
-
         self._update_act(turns, act)
         return act
 
@@ -206,6 +217,94 @@ class Perturb(object):
             processed_turn = nlp(turn)
             modified_turn = ' '.join([x.text for x in processed_turn if x.pos_ != 'NOUN'])
             return turns[:pos] + [modified_turn] + turns[pos:]
+
+    def replaceall(self, turns):
+        return turns
+
+    def replace10percent(self, turns):
+        self.opt['dict_file'] = self.opt['model_file'] + '.dict'
+        dictionary = DictionaryAgent(self.opt)
+        dictionary_len = len(dictionary)
+        modified_turns = []
+        for turn in turns:
+            turn = turn.split()
+            turn_len = len(turn)
+            replace_len = math.ceil(turn_len * 0.1)
+            replace_target_index = np.random.choice(turn_len, replace_len, replace=False).tolist()
+            replace_target_index.sort()
+            replace_target_words = [turn[x] for x in replace_target_index]
+            replace_words = []
+            i = 0
+            while i < replace_len:
+                replace_word_index = np.random.choice(dictionary_len, 1, replace=False).tolist()
+                replace_word = dictionary.ind2tok[replace_word_index[0]]
+                if replace_word == replace_target_words[i]:
+                    i -= 1
+                else:
+                    replace_words.append(replace_word)
+                i += 1
+            for i in range(replace_len):
+                turn[replace_target_index[i]] = replace_words[i]
+            modified_turns.append(' '.join(turn))
+        return modified_turns
+
+    def replace20percent(self, turns):
+        self.opt['dict_file'] = self.opt['model_file'] + '.dict'
+        dictionary = DictionaryAgent(self.opt)
+        dictionary_len = len(dictionary)
+        modified_turns = []
+        for turn in turns:
+            turn = turn.split()
+            turn_len = len(turn)
+            replace_len = math.ceil(turn_len * 0.2)
+            if replace_len == 1 and turn_len > 1:
+                replace_len = 2
+            replace_target_index = np.random.choice(turn_len, replace_len, replace=False).tolist()
+            replace_target_index.sort()
+            replace_target_words = [turn[x] for x in replace_target_index]
+            replace_words = []
+            i = 0
+            while i < replace_len:
+                replace_word_index = np.random.choice(dictionary_len, 1, replace=False).tolist()
+                replace_word = dictionary.ind2tok[replace_word_index[0]]
+                if replace_word == replace_target_words[i]:
+                    i -= 1
+                else:
+                    replace_words.append(replace_word)
+                i += 1
+            for i in range(replace_len):
+                turn[replace_target_index[i]] = replace_words[i]
+            modified_turns.append(' '.join(turn))
+        return modified_turns
+
+    def replace30percent(self, turns):
+        self.opt['dict_file'] = self.opt['model_file'] + '.dict'
+        dictionary = DictionaryAgent(self.opt)
+        dictionary_len = len(dictionary)
+        modified_turns = []
+        for turn in turns:
+            turn = turn.split()
+            turn_len = len(turn)
+            replace_len = math.ceil(turn_len * 0.3)
+            if (replace_len == 1 or replace_len == 2) and turn_len > 2:
+                replace_len = 3
+            replace_target_index = np.random.choice(turn_len, replace_len, replace=False).tolist()
+            replace_target_index.sort()
+            replace_target_words = [turn[x] for x in replace_target_index]
+            replace_words = []
+            i = 0
+            while i < replace_len:
+                replace_word_index = np.random.choice(dictionary_len, 1, replace=False).tolist()
+                replace_word = dictionary.ind2tok[replace_word_index[0]]
+                if replace_word == replace_target_words[i]:
+                    i -= 1
+                else:
+                    replace_words.append(replace_word)
+                i += 1
+            for i in range(replace_len):
+                turn[replace_target_index[i]] = replace_words[i]
+            modified_turns.append(' '.join(turn))
+        return modified_turns
 
     def last_few_only(self, turns, max_num_turns_to_retain):
         return turns[-max_num_turns_to_retain:]
