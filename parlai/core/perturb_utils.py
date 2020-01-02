@@ -219,6 +219,7 @@ class Perturb(object):
             return turns[:pos] + [modified_turn] + turns[pos:]
 
     def replaceall(self, turns):
+
         return turns
 
     def replace10percent(self, turns):

@@ -544,7 +544,7 @@ class TrainLoop():
                     ))
                     self.save_model('.checkpoint')
                     self.save_time.reset()
-                empty_cache()
+
 
         if not self.saved and is_primary_worker():
             # save agent

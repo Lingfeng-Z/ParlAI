@@ -129,8 +129,8 @@ then
             python -W ignore examples/eval_model.py $EVAL_MODEL_ARGS -t $DATASET -mf $MF -sft True -pb "None" --datatype $DATATYPE > $LOGFILE
             grep FINAL_REPORT $LOGFILE
 
-            #for PERTURB_TYPE in "worddrop_random" "verbdrop_random" "noundrop_random" "wordshuf_random" "wordreverse_random" "replace10percent" "replace20percent" "replace30percent"
-            for PERTURB_TYPE in "replace10percent" "replace20percent" "replace30percent"
+            for PERTURB_TYPE in "worddrop_random" "verbdrop_random" "noundrop_random" "wordshuf_random" "wordreverse_random" "replace10percent" "replace20percent" "replace30percent"
+            #for PERTURB_TYPE in "replace10percent" "replace20percent" "replace30percent"
             do
                 echo "---------------------"
                 echo "CONFIG : "$DATASET"_"$MODEL_TYPE"_"$DATATYPE"_"$PERTURB_TYPE
