@@ -12,7 +12,7 @@ else
 
 fi
 
-echo "RUN : "$RUN_ID    
+echo "RUN : "$RUN_ID
 LOGDIR="perturb_log_files_"$RUN_ID"/"
 SAVEDIR="save_dir_run_"$RUN_ID"/"
 
@@ -72,7 +72,7 @@ elif [ "$2" = "transformer" ]
 then
     echo "MODELTYPE: "$2
     COMMON_ARGS=$GPU_ARGS" -m transformer/generator"
-    EVAL_MODEL_ARGS=$COMMON_ARGS" -bs 1 -d False -ne 1000" 
+    EVAL_MODEL_ARGS=$COMMON_ARGS" -bs 1 -d False -ne 1000"
     TRAIN_MODEL_ARGS=$COMMON_ARGS" -bs 32 --optimizer adam -lr 0.001 --lr-scheduler invsqrt --warmup-updates 4000 -eps 20 -veps 1 -stim 200"
 else
     echo "INVALID modeltype : "$2" Supported : s2s, s2s_att_general, transformer"
@@ -111,7 +111,7 @@ then
                 LOGFILE=$LOGDIR/log_$DATASET"_"$MODEL_TYPE"_"$DATATYPE"_last_few_only__"$NUM_TURNS_TO_RETAIN".txt"
                 python -W ignore examples/eval_model.py $EVAL_MODEL_ARGS -t $DATASET -mf $MF -sft True -pb "last_few_only__"$NUM_TURNS_TO_RETAIN --datatype $DATATYPE > $LOGFILE
                 grep FINAL_REPORT $LOGFILE
-            
+
             done
         done
     done
@@ -129,6 +129,12 @@ then
             python -W ignore examples/eval_model.py $EVAL_MODEL_ARGS -t $DATASET -mf $MF -sft True -pb "None" --datatype $DATATYPE > $LOGFILE
             grep FINAL_REPORT $LOGFILE
 
+            echo "---------------------"
+            echo "CONFIG : "$DATASET"_"$MODEL_TYPE"_"$DATATYPE"_generation"
+            LOGFILE=$LOGDIR/log_$DATASET"_"$MODEL_TYPE"_"$DATATYPE"_generation.txt"
+            python -W ignore examples/eval_model.py $EVAL_MODEL_ARGS -t "dialog_babi:Task:5" -mf $MF -sft True -pb "None" --datatype $DATATYPE > $LOGFILE
+            grep FINAL_REPORT $LOGFILE
+
             for PERTURB_TYPE in "worddrop_random" "verbdrop_random" "noundrop_random" "wordshuf_random" "wordreverse_random" "replace10percent" "replace20percent" "replace30percent"
             #for PERTURB_TYPE in "replace10percent" "replace20percent" "replace30percent"
             do
@@ -138,7 +144,7 @@ then
                 python -W ignore examples/eval_model.py $EVAL_MODEL_ARGS -t $DATASET -mf $MF -sft True -pb $PERTURB_TYPE --datatype $DATATYPE > $LOGFILE
                 grep FINAL_REPORT $LOGFILE
             done
-        done 
+        done
     done
 elif [ $RUN_MODE = "train" ]
 then
